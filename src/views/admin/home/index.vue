@@ -1,9 +1,8 @@
 <template>
-  <div>首页<a-button>按钮</a-button></div>
+<div>后台首页2</div>
 </template>
 
 <script setup lang="ts">
-
 </script>
 
 <style scoped>
