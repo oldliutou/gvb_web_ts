@@ -10,27 +10,28 @@
             </div>
             <div class="gvb_menu">
 
-                <a-menu>
-                    <template v-for="item in menuList" :key="item.key">
-                        <a-menu-item :key="item.key" v-if="item.child?.length===0">
+                <a-menu
+                    @menu-item-click="clickMenu"
+                    v-model:selected-keys="selectKeys"
+                    v-model:open-keys="openKeys"
+                >
+                    <template v-for="item in menuList" :key="item.name">
+                        <a-menu-item :key="item.name" v-if="item.child?.length===0">
                             {{item.title}}
                             <template #icon>
                                 <component :is="item.icon"></component>
                             </template>
                         </a-menu-item>
-                        <a-sub-menu :key="item.key" v-if="item.child?.length!==0">
+                        <a-sub-menu :key="item.name" v-if="item.child?.length!==0">
                             <template #icon>
                                 <component :is="item.icon"></component>
                             </template>
                             <template #title>{{ item.title }}</template>
-                            <a-menu-item  v-for="sub in item.child" :key="sub.key" >
+                            <a-menu-item  v-for="sub in item.child" :key="sub.name" >
                                 {{ sub.title }}
                             </a-menu-item>
                         </a-sub-menu>
                     </template>
-
-
-
                 </a-menu>
 
 
@@ -75,7 +76,11 @@
                 <span class="gvb_tab">文章列表</span>
             </div>
             <div class="gvb_content">
-                <router-view/>
+                <router-view v-slot="{ Component }">
+                    <transition name="fade" mode="out-in">
+                        <component :is="Component"></component>
+                    </transition>
+                </router-view>
             </div>
         </main>
     </div>
@@ -93,6 +98,11 @@ import {
     IconBulb, IconUser,
 } from '@arco-design/web-vue/es/icon';
 import type {Component} from "vue";
+import {useRouter} from "vue-router";
+import {useRoute} from "vue-router";
+import {ref} from "vue";
+const route = useRoute()
+const router = useRouter()
 interface MenuType{
     key: string,
     title:string,
@@ -112,13 +122,21 @@ const menuList:MenuType[] = [
     {key:"3",title:'文章管理',icon:IconBulb,name:"article",child:[
         {key:"3_0",title:'文章列表',name:"article_list",child:[]},
         ]},
-    {key:"4",title:'聊天记录',icon:IconBug,name:"chat_group",child:[
+    {key:"4",title:'群聊管理',icon:IconBug,name:"chat_group",child:[
         {key:"4_0",title:'聊天记录',name:"chat_list",child:[]},
         ]},
     {key:"5",title:'系统管理',icon:IconApps,name:"system",child:[
                 {key:"5_0",title:'菜单列表',name:"menu_list",child:[]},
         ]},
 ]
+const selectKeys = ref([route.name])
+const openKeys = ref([route.matched[1].name])
+console.log(route.name,route)
+function  clickMenu(name:string){
+    router.push({
+        name:name
+    })
+}
 
 </script>
 
@@ -126,6 +144,7 @@ const menuList:MenuType[] = [
 .gvb_admin {
   display: flex;
   color: var(--color-text-2);
+    height: 100vh;
   aside{
     width: 240px;
     border-right: 1px solid var(--bg);
@@ -155,6 +174,8 @@ const menuList:MenuType[] = [
   }
   main{
     width: calc(100% - 240px);
+      overflow-x: hidden;
+      overflow-y: auto;
     .gvb_header{
       width: 100%;
       height: 60px;
@@ -219,5 +240,21 @@ const menuList:MenuType[] = [
     min-height: calc(100vh - 90px);
     padding: 20px;
   }
+}
+.fade-level-to{
+    opacity: 0;
+    transform: translateX(30px);
+}
+.fade-enter-active{
+    transform: translateX(-30px);
+    opacity: 0;
+
+}
+.fade-enter-to{
+    transform: translateX(0px);
+    opacity: 1;
+}
+.fade-level-active,.fade-enter-active{
+    transition: all 0.3s ease-out;
 }
 </style>
